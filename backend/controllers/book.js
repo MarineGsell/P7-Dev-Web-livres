@@ -38,8 +38,10 @@ exports.modifyBook = (req, res, next) => {
             if(book.userId !== req.auth.userId){
                 res.status(403).json({ message: 'unauthorized request' })
             } else {
-                book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
-                    .then(() => res.status(200).json({ message: 'livre modifié' }))
+                Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
+                    .then( () => {
+                        return res.status(200).json({ message: 'livre modifié' })
+                    })
                     .catch(error => res.status(401).json({ error }))
             }
         })
