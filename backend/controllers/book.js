@@ -2,9 +2,11 @@ const Book = require('../models/Book')
 const fs = require('fs');
 
 exports.createBook = (req, res, next) => {
+    // Parsage des données
     const bookObject = JSON.parse(req.body.book)
     delete bookObject._id
     delete bookObject._userId
+    // Création du nouveau livre
     const book = new Book ({
         ...bookObject,
         userId: req.auth.userId,
@@ -35,6 +37,7 @@ exports.modifyBook = (req, res, next) => {
     delete bookObject._userId
     Book.findOne({ _id: req.params.id })
         .then((book) => {
+            // Vérification de l'ID
             if(book.userId !== req.auth.userId){
                 res.status(403).json({ message: 'unauthorized request' })
             } else {
@@ -51,11 +54,15 @@ exports.modifyBook = (req, res, next) => {
 exports.deleteBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
         .then(book => {
+            // Vérification de l'ID
             if(book.userId !== req.auth.userId){
                 res.status(403).json({ message: 'unauthorized request' })
             } else {
+                // récupération du nom du fichier
                 const filename = book.imageUrl.split('/images/')[1]
+                // Supprime le fichier du serveur
                 fs.unlink(`images/${filename}`, () => {
+                    // Supprime e fichier de la base de donnée
                     Book.deleteOne({ _id: req.params.id })
                         .then(() => res.status(200).json({ message: 'livre supprimé' }))
                         .catch(error => res.status(401).json({ error }))
