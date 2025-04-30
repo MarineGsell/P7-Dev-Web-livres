@@ -1,2 +1,2 @@
 ## Lancer le projet
-Pour lancer le backend, exécuter la commande nodemon server dans le terminal.
+Pour lancer le backend, exécuter la commande `npm install` suivie de `npm start` dans le terminal.
