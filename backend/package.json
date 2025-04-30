@@ -1,16 +1,26 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Pour lancer le backend, exécuter la commande nodemon server dans le terminal.",
+  "repository": {
+    "type": "git",
+    "url": "mon_vieux_grimoire"
+  },
   "license": "ISC",
   "author": "",
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^5.1.0",
-    "mongoose": "^8.13.3"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.5.0",
+    "mongoose-unique-validator": "^4.0.1",
+    "multer": "^1.4.5-lts.2",
+    "sharp": "^0.34.1"
   }
 }
