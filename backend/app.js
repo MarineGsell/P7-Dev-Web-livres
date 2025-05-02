@@ -6,9 +6,11 @@ const bookRoutes = require('./routes/book')
 const path = require('path')
 
 const app = express()
+const name = process.env.NAME
+const password = process.env.PASSWORD
 
 // Connexion à la basede donnée 
-mongoose.connect('mongodb+srv://marine:Paillette33@cluster0.jw9q2il.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+mongoose.connect(`mongodb+srv://${name}:${password}@cluster0.jw9q2il.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`,
     { useNewUrlParser: true,
       useUnifiedTopology: true })
     .then(() => console.log('Connexion à MongoDB réussie !'))
