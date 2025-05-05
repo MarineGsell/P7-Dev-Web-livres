@@ -25,7 +25,8 @@ exports.ratingBook = (req, res, next) => {
             // On met à jour la moyenne
             const initialValue = 0
             const sumRatings = book.ratings.reduce((accumulator, currentValue) => accumulator + currentValue.grade, initialValue)
-            book.averageRating = sumRatings / book.ratings.length
+            const averageRating = sumRatings / book.ratings.length 
+            book.averageRating = Number.parseFloat(averageRating).toFixed(1)
             
             // On sauvegarde
             book.save()

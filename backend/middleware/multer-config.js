@@ -59,16 +59,13 @@ const processImage = async (req, res, next) => {
 };
 
 // Exporter une fonction qui retourne le middleware
-module.exports = () => {
-    
-    return (req, res, next) => {        
-        upload.single('image')(req, res, (err) => {
-            if (err) {
-                return res.status(400).json({ error: err.message })
-            }
-            
-            // Après le téléchargement réussi, procéder à la conversion
-            processImage(req, res, next)
-        })
-    }
+module.exports = (req, res, next) => {        
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({ error: err.message })
+        }
+        
+        // Après le téléchargement réussi, procéder à la conversion
+        processImage(req, res, next)
+    })
 }
