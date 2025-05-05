@@ -2,60 +2,73 @@ const multer = require('multer')
 const sharp = require('sharp')
 const fs = require('fs')
 const path = require('path')
-const { error } = require('console')
 
-const MIME_TYPES = {
-    'image/jpg': 'jpg',
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
+// Vérifier si le dossier images existe, sinon le créer
+if (!fs.existsSync('images')) {
+    fs.mkdirSync('images', { recursive: true })
 }
 
-// Configuration du stockage temporaire pour l'upload
+// Configuration du stockage pour multer
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
-        callback(null, 'images/temp')
+        callback(null, 'images')
     },
     filename: (req, file, callback) => {
-        const name = file.originalname.split(' ').join('_')
-        const extension = MIME_TYPES[file.mimetype]
-        callback(null, name + Date.now() + '.' + extension)
+        const uniqueSuffix = Date.now() 
+        const extension = file.mimetype.split('/')[1]
+        callback(null, uniqueSuffix + '.' + extension)
     }
-})
+});
 
-// Middleware Multer de base
-const upload = multer({ storage }).single('image')
+// Créer une instance de multer configurée
+const upload = multer({ storage: storage })
 
-// Middleware de compression d'image
-const compressImage = (req, res, next) => {
-    if(!req.file){
+// Middleware pour la conversion en WebP
+const processImage = async (req, res, next) => {
+    // Si pas de fichier, passer au suivant
+    if (!req.file) {
         return next()
     }
-    const filePath = req.file.path
-    const fileName = path.basename(filePath)
-    const outputPath = `images/${fileName}`
+    
+    try {
+        // Chemin du fichier d'origine
+        const originalPath = req.file.path
+        
+        // Créer le nom du fichier WebP
+        const filename = path.parse(req.file.filename).name
+        const webpFilename = `${filename}.webp`
+        const webpPath = `images/${webpFilename}`
+                
+        // Conversion avec Sharp
+        await sharp(originalPath)
+            .webp({ quality: 80 })
+            .toFile(webpPath)
+                
+        // Supprimer le fichier original
+        fs.unlinkSync(originalPath)
+        
+        // Mettre à jour les informations du fichier
+        req.file.filename = webpFilename
+        req.file.path = webpPath
+        req.file.mimetype = 'image/webp'
+        
+        next()
+    } catch (error) {
+        return res.status(500).json({ error: error.message })
+    }
+};
 
-    // Compression avec Sharp
-    sharp(filePath)
-        .webp({ quality: 80 })
-        .toFile(outputPath)
-        .then(() => {
-            // Supprime le fichier original
-            fs.unlinkSync(filePath)
-
-            // Met à jour le chemin du fichier dans req.file
-            req.file.path = outputPath
-            next()
+// Exporter une fonction qui retourne le middleware
+module.exports = () => {
+    
+    return (req, res, next) => {        
+        upload.single('image')(req, res, (err) => {
+            if (err) {
+                return res.status(400).json({ error: err.message })
+            }
+            
+            // Après le téléchargement réussi, procéder à la conversion
+            processImage(req, res, next)
         })
-        .catch(error => res.status(400).json({ error }))
-}
-
-// Exporte un middleware qui combine l'upload et la compression
-
-module.exports = (req, res, next) => {
-    upload(req, res, (error) => {
-        if(error){
-            return next(error)
-        }
-        compressImage(req, res, next)
-    })
+    }
 }

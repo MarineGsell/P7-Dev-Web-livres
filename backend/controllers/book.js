@@ -40,13 +40,29 @@ exports.modifyBook = (req, res, next) => {
             // Vérification de l'ID
             if(book.userId !== req.auth.userId){
                 res.status(403).json({ message: 'unauthorized request' })
-            } else {
-                Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
-                    .then( () => {
-                        return res.status(200).json({ message: 'livre modifié' })
-                    })
-                    .catch(error => res.status(401).json({ error }))
+            } 
+            // Supression de l'ancienne image si nouvelle téléchargée
+            if (req.file && book.imageUrl) {
+                try {
+                    const fileName = book.imageUrl.split('/images/')[1]
+                    const filePath = `images/${fileName}`
+                                        
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath)
+                        console.log('Ancien fichier supprimé avec succès')
+                    } else {
+                        console.log('Ancien fichier introuvable')
+                    }
+                } catch (err) {
+                    console.error('Erreur lors de la suppression:', err)
+                }
             }
+            Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
+                .then( () => {
+                    return res.status(200).json({ message: 'livre modifié' })
+                })
+                .catch(error => res.status(401).json({ error }))
+            
         })
         .catch(error => res.status(400).json({ error }))
 }
