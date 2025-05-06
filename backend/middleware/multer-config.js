@@ -44,8 +44,12 @@ const processImage = async (req, res, next) => {
             .webp({ quality: 80 })
             .toFile(webpPath)
                 
-        // Supprimer le fichier original
-        fs.unlinkSync(originalPath)
+        // Supprimer le fichier d'origine
+        try {
+            fs.unlinkSync(originalPath)  
+        } catch (error) {
+            console.error(`Erreur de suppression du fichier d'origine : `, error)
+        }
         
         // Mettre à jour les informations du fichier
         req.file.filename = webpFilename
